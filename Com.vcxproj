@@ -112,8 +112,10 @@
   <ItemGroup>
     <ClInclude Include="ClassFactory.h" />
     <ClInclude Include="Com.h" />
+    <ClInclude Include="Convert.h" />
     <ClInclude Include="Dispatch.h" />
     <ClInclude Include="DispatchInterfaceSelector.h" />
+    <ClInclude Include="Error.h" />
     <ClInclude Include="InterfaceList.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="Object.h" />
@@ -123,6 +125,9 @@
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="Com.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

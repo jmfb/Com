@@ -10,9 +10,14 @@
     <ClInclude Include="ObjectList.h" />
     <ClInclude Include="Pointer.h" />
     <ClInclude Include="Com.h" />
+    <ClInclude Include="Convert.h" />
+    <ClInclude Include="Error.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Com.nuspec" />
     <None Include=".gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
 </Project>
