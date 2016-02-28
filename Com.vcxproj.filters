@@ -13,5 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Com.nuspec" />
+    <None Include=".gitignore" />
   </ItemGroup>
 </Project>
