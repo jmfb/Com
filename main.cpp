@@ -34,6 +34,7 @@ void TestLong(long* pointer = nullptr)
 	Test<long*>(Com::Get(value));
 	Test<long>(Com::Put(value));
 	Test<long*>(Com::PutRef(value));
+	Test<long>(Com::In(*pointer));
 	Test<long&>(Com::InOut(pointer));
 	Com::Retval(pointer) = value;
 }
@@ -44,6 +45,7 @@ void TestString(BSTR* pointer = nullptr)
 	Test<BSTR*>(Com::Get(value));
 	Test<BSTR>(Com::Put(value));
 	Test<BSTR*>(Com::PutRef(value));
+	Test<std::string>(Com::In(*pointer));
 	Test<std::string&>(Com::InOut(pointer));
 	Com::Retval(pointer) = value;
 }
@@ -54,7 +56,7 @@ void TestWideString()
 	Test<BSTR*>(Com::Get(value));
 	Test<BSTR>(Com::Put(value));
 	Test<BSTR*>(Com::PutRef(value));
-	//No InOut/Retval (only bound to std::string)
+	//No In/InOut/Retval (only bound to std::string)
 }
 
 void TestBool(VARIANT_BOOL* pointer = nullptr)
@@ -63,6 +65,7 @@ void TestBool(VARIANT_BOOL* pointer = nullptr)
 	Test<VARIANT_BOOL*>(Com::Get(value));
 	Test<VARIANT_BOOL>(Com::Put(value));
 	Test<VARIANT_BOOL*>(Com::PutRef(value));
+	Test<bool>(Com::In(*pointer));
 	Test<bool&>(Com::InOut(pointer));
 	Com::Retval(pointer) = value;
 }
@@ -73,7 +76,19 @@ void TestDate(DATE* pointer = nullptr)
 	Test<DATE*>(Com::Get(value));
 	Test<DATE>(Com::Put(value));
 	Test<DATE*>(Com::PutRef(value));
+	Test<std::chrono::system_clock::time_point>(Com::In(*pointer));
 	Test<std::chrono::system_clock::time_point&>(Com::InOut(pointer));
+	Com::Retval(pointer) = value;
+}
+
+void TestInterface(IUnknown** pointer = nullptr)
+{
+	Com::Pointer<IUnknown> value;
+	Test<IUnknown**>(Com::Get(value));
+	Test<IUnknown*>(Com::Put(value));
+	Test<IUnknown**>(Com::PutRef(value));
+	Test<Com::Pointer<IUnknown>>(Com::In(*pointer));
+	Test<Com::Pointer<IUnknown>&>(Com::InOut(pointer));
 	Com::Retval(pointer) = value;
 }
 

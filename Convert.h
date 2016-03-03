@@ -94,6 +94,22 @@ namespace Com
 		}
 	};
 
+	template <typename Source, typename Target>
+	class InValue
+	{
+	private:
+		Target target;
+
+	public:
+		InValue(Source value)
+		{
+			Assign(value, target);
+		}
+		operator const Target&()
+		{
+			return target;
+		}
+	};
 
 	template <typename Source, typename Target>
 	class InOutValue
@@ -143,6 +159,7 @@ namespace Com
 		using Get = GetValue<Type, Type, Type>;
 		using Put = Type;
 		using PutRef = GetValue<Type, Type, Type>;
+		using In = InValue<Type, Type>;
 		using InOut = InOutValue<Type, Type>;
 		using Retval = RetvalValue<Type, Type>;
 	};
@@ -161,6 +178,12 @@ namespace Com
 
 	template <typename Source>
 	inline typename TypeInfo<Source>::PutRef PutRef(Source& source)
+	{
+		return{ source };
+	}
+
+	template <typename Source>
+	inline typename TypeInfo<Source>::In In(Source source)
 	{
 		return{ source };
 	}
@@ -220,6 +243,101 @@ namespace Com
 	};
 
 	////////////////////////////////////////////////////////////////////////////////
+	// Interfaces
+
+	template <typename Interface>
+	class GetInterface
+	{
+	private:
+		Pointer<Interface>& target;
+		Pointer<Interface> source;
+
+	public:
+		GetInterface(Pointer<Interface>& value)
+			: target(value)
+		{
+		}
+		~GetInterface()
+		{
+			target = source;
+		}
+		operator Interface**()
+		{
+			return &source;
+		}
+	};
+
+	template <typename Interface>
+	class PutInterface
+	{
+	private:
+		Interface* source;
+
+	public:
+		PutInterface(Pointer<Interface> value)
+			: source(value)
+		{
+		}
+		operator Interface*()
+		{
+			return source;
+		}
+	};
+
+	template <typename Interface>
+	class PutRefInterface
+	{
+	private:
+		Pointer<Interface>& source;
+
+	public:
+		PutRefInterface(Pointer<Interface>& value)
+			: source(value)
+		{
+		}
+		operator Interface**()
+		{
+			return &source.p;
+		}
+	};
+
+	template <typename Interface>
+	class TypeInfo<Pointer<Interface>>
+	{
+	public:
+		using Get = GetInterface<Interface>;
+		using Put = PutInterface<Interface>;
+		using PutRef = PutRefInterface<Interface>;
+	};
+
+	template <typename Interface>
+	class TypeInfo<Interface*>
+	{
+	public:
+		using In = InValue<Interface*, Pointer<Interface>>;
+		using InOut = InOutValue<Interface*, Pointer<Interface>>;
+		using Retval = RetvalValue<Pointer<Interface>, Interface*>;
+	};
+
+	template <typename Interface>
+	inline void Assign(const Interface*& source, Pointer<Interface>& target)
+	{
+		target = source;
+	}
+
+	template <typename Interface>
+	inline void Assign(const Pointer<Interface>& source, Interface*& target)
+	{
+		if (target == source)
+			return;
+		if (target != nullptr)
+			target->Release();
+		target = source;
+		if (target != nullptr)
+			target->AddRef();
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
 	// std::string
 
 	template <>
@@ -236,12 +354,13 @@ namespace Com
 	class TypeInfo<BSTR>
 	{
 	public:
+		using In = InValue<BSTR, std::string>;
 		using InOut = InOutValue<BSTR, std::string>;
 		using Retval = RetvalValue<std::string, BSTR>;
 	};
 
 	template <>
-	inline void Assign(const BSTR& source, std::string& target)
+	inline void Assign<BSTR, std::string>(const BSTR& source, std::string& target)
 	{
 		if (source == nullptr)
 			target.clear();
@@ -250,7 +369,7 @@ namespace Com
 	}
 
 	template <>
-	inline void Assign(const std::string& source, BSTR& target)
+	inline void Assign<std::string, BSTR>(const std::string& source, BSTR& target)
 	{
 		if (target != nullptr)
 			::SysFreeString(target);
@@ -283,7 +402,7 @@ namespace Com
 	};
 
 	template <>
-	inline void Assign(const BSTR& source, std::wstring& target)
+	inline void Assign<BSTR, std::wstring>(const BSTR& source, std::wstring& target)
 	{
 		if (source == nullptr)
 			target.clear();
@@ -292,7 +411,7 @@ namespace Com
 	}
 
 	template <>
-	inline void Assign(const std::wstring& source, BSTR& target)
+	inline void Assign<std::wstring, BSTR>(const std::wstring& source, BSTR& target)
 	{
 		if (target != nullptr)
 			::SysFreeString(target);
@@ -328,6 +447,7 @@ namespace Com
 	class TypeInfo<VARIANT_BOOL>
 	{
 	public:
+		using In = InValue<VARIANT_BOOL, bool>;
 		using InOut = InOutValue<VARIANT_BOOL, bool>;
 		using Retval = RetvalValue<bool, VARIANT_BOOL>;
 	};
@@ -361,6 +481,7 @@ namespace Com
 	class TypeInfo<DATE>
 	{
 	public:
+		using In = InValue<DATE, std::chrono::system_clock::time_point>;
 		using InOut = InOutValue<DATE, std::chrono::system_clock::time_point>;
 		using Retval = RetvalValue<std::chrono::system_clock::time_point, DATE>;
 	};
