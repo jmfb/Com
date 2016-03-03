@@ -11,6 +11,41 @@ struct __declspec(uuid("4DE37185-5855-4B6F-A0D8-F4B530548511")) IFoo2 : public I
 	virtual HRESULT __stdcall Bar2() = 0;
 };
 
+template <typename Interface>
+class IFooPtrT : public Com::Pointer<Interface>
+{
+public:
+	IFooPtrT(Interface* value = nullptr)
+		: Com::Pointer<Interface>(value)
+	{
+	}
+	IFooPtrT<Interface>& operator=(Interface* value)
+	{
+		using Base = Com::Pointer<Interface>;
+		Base::operator=(value);
+		return *this;
+	}
+	operator Interface*() const
+	{
+		return p;
+	}
+	void Bar()
+	{
+		auto hr = p->Bar();
+		Check(hr, __FUNCTION__, "");
+	}
+};
+using IFooPtr = IFooPtrT<IFoo>;
+
+template <>
+class Com::TypeInfo<IFoo*>
+{
+public:
+	using In = InValue<IFoo*, IFooPtr>;
+	using InOut = InOutValue<IFoo*, IFooPtr>;
+	using Retval = RetvalValue<IFooPtr, IFoo*>;
+};
+
 extern const GUID CLSID_Foo = { 0x9627fa9f, 0x699b, 0x4afd, { 0x84, 0x86, 0xcc, 0xd8, 0x4, 0x47, 0x9b, 0x5 } };
 
 class Foo : public Com::Object<Foo, &CLSID_Foo, IFoo, IFoo2>
@@ -81,6 +116,17 @@ void TestDate(DATE* pointer = nullptr)
 	Com::Retval(pointer) = value;
 }
 
+void TestVariant(VARIANT* pointer = nullptr)
+{
+	Com::Variant value;
+	Test<VARIANT*>(Com::Get(value));
+	Test<VARIANT>(Com::Put(value));
+	Test<VARIANT*>(Com::PutRef(value));
+	Test<Com::Variant>(Com::In(*pointer));
+	Test<Com::Variant&>(Com::InOut(pointer));
+	Com::Retval(pointer) = value;
+}
+
 void TestInterface(IUnknown** pointer = nullptr)
 {
 	Com::Pointer<IUnknown> value;
@@ -89,6 +135,17 @@ void TestInterface(IUnknown** pointer = nullptr)
 	Test<IUnknown**>(Com::PutRef(value));
 	Test<Com::Pointer<IUnknown>>(Com::In(*pointer));
 	Test<Com::Pointer<IUnknown>&>(Com::InOut(pointer));
+	Com::Retval(pointer) = value;
+}
+
+void TestSmartPointer(IFoo** pointer = nullptr)
+{
+	IFooPtr value;
+	Test<IFoo**>(Com::Get(value));
+	Test<IFoo*>(Com::Put(value));
+	Test<IFoo**>(Com::PutRef(value));
+	Test<IFooPtr>(Com::In(*pointer));
+	Test<IFooPtr&>(Com::InOut(pointer));
 	Com::Retval(pointer) = value;
 }
 
@@ -112,6 +169,9 @@ int main()
 	TestWideString();
 	TestBool();
 	TestDate();
+	TestVariant();
+	TestInterface();
+	TestSmartPointer();
 	TestError();
 	return 0;
 }

@@ -105,7 +105,7 @@ namespace Com
 		{
 			Assign(value, target);
 		}
-		operator const Target&()
+		operator Target()
 		{
 			return target;
 		}
@@ -301,8 +301,8 @@ namespace Com
 		}
 	};
 
-	template <typename Interface>
-	class TypeInfo<Pointer<Interface>>
+	template <template <typename Interface> class SmartPointer, typename Interface>
+	class TypeInfo<SmartPointer<Interface>>
 	{
 	public:
 		using Get = GetInterface<Interface>;
@@ -518,5 +518,41 @@ namespace Com
 		systemTime.wYear = tm.tm_year + 1900;
 		systemTime.wDayOfWeek = tm.tm_wday;
 		::SystemTimeToVariantTime(&systemTime, &target);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Variant
+
+	template <>
+	class TypeInfo<Variant>
+	{
+	public:
+		using Get = GetValue<VARIANT, Variant, Variant>;
+		using Put = PutValue<VARIANT, Variant, Variant>;
+		using PutRef = PutRefValue<VARIANT, Variant, Variant>;
+		static constexpr VARTYPE DefaultSource = VT_EMPTY;
+	};
+
+	template <>
+	class TypeInfo<VARIANT>
+	{
+	public:
+		using In = InValue<VARIANT, Variant>;
+		using InOut = InOutValue<VARIANT, Variant>;
+		using Retval = RetvalValue<Variant, VARIANT>;
+	};
+
+	template <>
+	inline void Assign<VARIANT, Variant>(const VARIANT& source, Variant& target)
+	{
+		target = source;
+	}
+
+	template <>
+	inline void Assign<Variant, VARIANT>(const Variant& source, VARIANT& target)
+	{
+		auto hr = ::VariantCopy(&target, &source);
+		if (FAILED(hr))
+			throw std::runtime_error("VariantCopy failed.");
 	}
 }
