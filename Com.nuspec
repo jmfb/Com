@@ -2,13 +2,13 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
 	<metadata minClientVersion="2.8">
 		<id>Jmfb.Com</id>
-		<version>1.0.4</version>
+		<version>1.0.5</version>
 		<authors>Jacob Buysse</authors>
 		<owners>Jacob Buysse</owners>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>A set of C++ templates for writing COM objects.</description>
 		<projectUrl>https://github.com/jmfb/Com</projectUrl>
-		<releaseNotes>Adding smart pointer and variant conversions.</releaseNotes>
+		<releaseNotes>Fixed TypeInfo specialization for non-interface pointer case.</releaseNotes>
 		<copyright>Copyright 2016</copyright>
 		<tags>native COM</tags>
 	</metadata>

@@ -6,6 +6,7 @@
 #include <codecvt>
 #include <chrono>
 #include <ctime>
+#include <type_traits>
 #include "Pointer.h"
 
 namespace Com
@@ -152,7 +153,7 @@ namespace Com
 		}
 	};
 
-	template <typename Type>
+	template <typename Type, typename Enable = void>
 	class TypeInfo
 	{
 	public:
@@ -311,7 +312,7 @@ namespace Com
 	};
 
 	template <typename Interface>
-	class TypeInfo<Interface*>
+	class TypeInfo<Interface*, typename std::enable_if<std::is_base_of<IUnknown, Interface>::value>::type>
 	{
 	public:
 		using In = InValue<Interface*, Pointer<Interface>>;

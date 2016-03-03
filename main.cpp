@@ -138,6 +138,17 @@ void TestInterface(IUnknown** pointer = nullptr)
 	Com::Retval(pointer) = value;
 }
 
+void TestDispatch(IDispatch** pointer = nullptr)
+{
+	Com::Pointer<IDispatch> value;
+	Test<IDispatch**>(Com::Get(value));
+	Test<IDispatch*>(Com::Put(value));
+	Test<IDispatch**>(Com::PutRef(value));
+	Test<Com::Pointer<IDispatch>>(Com::In(*pointer));
+	Test<Com::Pointer<IDispatch>&>(Com::InOut(pointer));
+	Com::Retval(pointer) = value;
+}
+
 void TestSmartPointer(IFoo** pointer = nullptr)
 {
 	IFooPtr value;
