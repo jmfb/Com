@@ -26,69 +26,55 @@ public:
 	}
 };
 
-void LongOutput(long* result)
-{
-}
-void LongInput(long value)
-{
-}
-void StringOutput(BSTR* result)
-{
-}
-void StringInput(BSTR value)
-{
-}
-void BoolOutput(VARIANT_BOOL* result)
-{
-}
-void BoolInput(VARIANT_BOOL value)
-{
-}
-void DateOutput(DATE* result)
-{
-}
-void DateInput(DATE value)
-{
-}
+template <typename Argument> void Test(Argument argument) {}
 
-void TestLong()
+void TestLong(long* pointer = nullptr)
 {
 	long value = 0;
-	LongOutput(Com::Get(value));
-	LongInput(Com::Put(value));
-	LongOutput(Com::PutRef(value));
+	Test<long*>(Com::Get(value));
+	Test<long>(Com::Put(value));
+	Test<long*>(Com::PutRef(value));
+	Test<long&>(Com::InOut(pointer));
+	Com::Retval(pointer) = value;
 }
 
-void TestString()
+void TestString(BSTR* pointer = nullptr)
 {
 	std::string value;
-	StringOutput(Com::Get(value));
-	StringInput(Com::Put(value));
-	StringOutput(Com::PutRef(value));
+	Test<BSTR*>(Com::Get(value));
+	Test<BSTR>(Com::Put(value));
+	Test<BSTR*>(Com::PutRef(value));
+	Test<std::string&>(Com::InOut(pointer));
+	Com::Retval(pointer) = value;
 }
 
 void TestWideString()
 {
 	std::wstring value;
-	StringOutput(Com::Get(value));
-	StringInput(Com::Put(value));
-	StringOutput(Com::PutRef(value));
+	Test<BSTR*>(Com::Get(value));
+	Test<BSTR>(Com::Put(value));
+	Test<BSTR*>(Com::PutRef(value));
+	//No InOut/Retval (only bound to std::string)
 }
 
-void TestBool()
+void TestBool(VARIANT_BOOL* pointer = nullptr)
 {
 	bool value = false;
-	BoolOutput(Com::Get(value));
-	BoolInput(Com::Put(value));
-	BoolOutput(Com::PutRef(value));
+	Test<VARIANT_BOOL*>(Com::Get(value));
+	Test<VARIANT_BOOL>(Com::Put(value));
+	Test<VARIANT_BOOL*>(Com::PutRef(value));
+	Test<bool&>(Com::InOut(pointer));
+	Com::Retval(pointer) = value;
 }
 
-void TestDate()
+void TestDate(DATE* pointer = nullptr)
 {
 	auto value = std::chrono::system_clock::now();
-	DateOutput(Com::Get(value));
-	DateInput(Com::Put(value));
-	DateOutput(Com::PutRef(value));
+	Test<DATE*>(Com::Get(value));
+	Test<DATE>(Com::Put(value));
+	Test<DATE*>(Com::PutRef(value));
+	Test<std::chrono::system_clock::time_point&>(Com::InOut(pointer));
+	Com::Retval(pointer) = value;
 }
 
 HRESULT TestError()
@@ -97,9 +83,9 @@ HRESULT TestError()
 	{
 		Com::CheckError(E_FAIL, __FUNCTION__, "test");
 	}
-	catch (const Com::Error& error)
+	catch (...)
 	{
-		return error.SetErrorInfo();
+		return Com::HandleException();
 	}
 	return S_OK;
 }

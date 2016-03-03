@@ -10,6 +10,9 @@
 
 namespace Com
 {
+	template <typename Type>
+	Type& CheckPointer(Type* value);
+
 	template <typename Source, typename Target>
 	inline void Assign(const Source& source, Target& target)
 	{
@@ -91,6 +94,48 @@ namespace Com
 		}
 	};
 
+
+	template <typename Source, typename Target>
+	class InOutValue
+	{
+	private:
+		Source& source;
+		Target target;
+
+	public:
+		InOutValue(Source* value)
+			: source(CheckPointer(value))
+		{
+			Assign(source, target);
+		}
+		~InOutValue()
+		{
+			Assign(target, source);
+		}
+		operator Target&()
+		{
+			return target;
+		}
+	};
+
+	template <typename Source, typename Target>
+	class RetvalValue
+	{
+	private:
+		Target& target;
+
+	public:
+		RetvalValue(Target* value)
+			: target(CheckPointer(value))
+		{
+		}
+		RetvalValue<Source, Target>& operator=(const Source& source)
+		{
+			Assign(source, target);
+			return *this;
+		}
+	};
+
 	template <typename Type>
 	class TypeInfo
 	{
@@ -98,6 +143,8 @@ namespace Com
 		using Get = GetValue<Type, Type, Type>;
 		using Put = Type;
 		using PutRef = GetValue<Type, Type, Type>;
+		using InOut = InOutValue<Type, Type>;
+		using Retval = RetvalValue<Type, Type>;
 	};
 
 	template <typename Target>
@@ -116,6 +163,18 @@ namespace Com
 	inline typename TypeInfo<Source>::PutRef PutRef(Source& source)
 	{
 		return{ source };
+	}
+
+	template <typename Source>
+	inline typename TypeInfo<Source>::InOut InOut(Source* source)
+	{
+		return{ source };
+	}
+
+	template <typename Target>
+	inline typename TypeInfo<Target>::Retval Retval(Target* target)
+	{
+		return{ target };
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -143,6 +202,23 @@ namespace Com
 		}
 	};
 
+	template <typename Type>
+	class InOutValue<Type, Type>
+	{
+	private:
+		Type& source;
+
+	public:
+		InOutValue(Type* value)
+			: source(CheckPointer(value))
+		{
+		}
+		operator Type&()
+		{
+			return source;
+		}
+	};
+
 	////////////////////////////////////////////////////////////////////////////////
 	// std::string
 
@@ -157,12 +233,34 @@ namespace Com
 	};
 
 	template <>
+	class TypeInfo<BSTR>
+	{
+	public:
+		using InOut = InOutValue<BSTR, std::string>;
+		using Retval = RetvalValue<std::string, BSTR>;
+	};
+
+	template <>
+	inline void Assign(const BSTR& source, std::string& target)
+	{
+		if (source == nullptr)
+			target.clear();
+		else
+			target = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(source);
+	}
+
+	template <>
+	inline void Assign(const std::string& source, BSTR& target)
+	{
+		if (target != nullptr)
+			::SysFreeString(target);
+		target = String{ source.c_str() }.Detach();
+	}
+
+	template <>
 	inline void Assign<String, std::string>(const String& source, std::string& target)
 	{
-		if (source)
-			target = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(source);
-		else
-			target.clear();
+		Assign(static_cast<BSTR>(source), target);
 	}
 
 	template <>
@@ -185,12 +283,26 @@ namespace Com
 	};
 
 	template <>
+	inline void Assign(const BSTR& source, std::wstring& target)
+	{
+		if (source == nullptr)
+			target.clear();
+		else
+			target = source;
+	}
+
+	template <>
+	inline void Assign(const std::wstring& source, BSTR& target)
+	{
+		if (target != nullptr)
+			::SysFreeString(target);
+		target = ::SysAllocString(source.c_str());
+	}
+
+	template <>
 	inline void Assign<String, std::wstring>(const String& source, std::wstring& target)
 	{
-		if (source)
-			target = source;
-		else
-			target.clear();
+		Assign(static_cast<BSTR>(source), target);
 	}
 
 	template <>
@@ -210,6 +322,14 @@ namespace Com
 		using Put = PutValue<VARIANT_BOOL, bool, VARIANT_BOOL>;
 		using PutRef = PutRefValue<VARIANT_BOOL, bool, VARIANT_BOOL>;
 		static constexpr VARIANT_BOOL DefaultSource = VARIANT_FALSE;
+	};
+
+	template <>
+	class TypeInfo<VARIANT_BOOL>
+	{
+	public:
+		using InOut = InOutValue<VARIANT_BOOL, bool>;
+		using Retval = RetvalValue<bool, VARIANT_BOOL>;
 	};
 
 	template <>
@@ -235,6 +355,14 @@ namespace Com
 		using Put = PutValue<DATE, std::chrono::system_clock::time_point, DATE>;
 		using PutRef = PutRefValue<DATE, std::chrono::system_clock::time_point, DATE>;
 		static constexpr DATE DefaultSource = 0;
+	};
+
+	template <>
+	class TypeInfo<DATE>
+	{
+	public:
+		using InOut = InOutValue<DATE, std::chrono::system_clock::time_point>;
+		using Retval = RetvalValue<std::chrono::system_clock::time_point, DATE>;
 	};
 
 	template <>

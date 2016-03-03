@@ -111,9 +111,46 @@ namespace Com
 		}
 	};
 
+	class NotImplemented : public Error
+	{
+	public:
+		NotImplemented(const std::string& function)
+			: Error{ E_NOTIMPL, function, "", "Not implemented" }
+		{
+		}
+	};
+
 	inline void CheckError(HRESULT hr, const char* function, const char* location)
 	{
 		if (FAILED(hr))
 			throw Error(hr, function, location, Error::Translate(hr));
+	}
+
+	template <typename Type>
+	inline Type& CheckPointer(Type* value)
+	{
+		if (value == nullptr)
+			throw Error(E_POINTER, __FUNCTION__, "", "Null pointer");
+		return *value;
+	}
+
+	inline HRESULT HandleException()
+	{
+		try
+		{
+			throw;
+		}
+		catch (const Error& error)
+		{
+			return error.SetErrorInfo();
+		}
+		catch (const std::exception& exception)
+		{
+			return Error::SetErrorInfo(E_FAIL, exception.what());
+		}
+		catch (...)
+		{
+			return Error::SetErrorInfo(E_FAIL, "Unhandled exception");
+		}
 	}
 }
