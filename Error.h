@@ -153,4 +153,18 @@ namespace Com
 			return Error::SetErrorInfo(E_FAIL, "Unhandled exception");
 		}
 	}
+
+	template <typename Action>
+	inline HRESULT RunAction(Action action)
+	{
+		try
+		{
+			action();
+		}
+		catch (...)
+		{
+			return HandleException();
+		}
+		return S_OK;
+	}
 }
