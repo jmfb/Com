@@ -16,6 +16,7 @@
   <ItemGroup>
     <None Include="Com.nuspec" />
     <None Include=".gitignore" />
+    <None Include="Com.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

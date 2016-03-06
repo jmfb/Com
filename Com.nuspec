@@ -8,11 +8,12 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>A set of C++ templates for writing COM objects.</description>
 		<projectUrl>https://github.com/jmfb/Com</projectUrl>
-		<releaseNotes>Added RunAction helper.</releaseNotes>
+		<releaseNotes>Added RunAction helper.  Fixed package to use tools folder and targets file instead of content.</releaseNotes>
 		<copyright>Copyright 2016</copyright>
-		<tags>native COM</tags>
+		<tags>native COM C++ cplusplus</tags>
 	</metadata>
 	<files>
-		<file src="*.h" target="content\Com\" />
+		<file src="*.h" target="tools\native\Com\" />
+		<file src="Com.targets" target="build\native\Jmfb.Com.targets" />
 	</files>
 </package>

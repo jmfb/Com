@@ -125,6 +125,7 @@
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="Com.nuspec" />
+    <None Include="Com.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

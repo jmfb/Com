@@ -162,15 +162,7 @@ void TestSmartPointer(IFoo** pointer = nullptr)
 
 HRESULT TestError()
 {
-	try
-	{
-		Com::CheckError(E_FAIL, __FUNCTION__, "test");
-	}
-	catch (...)
-	{
-		return Com::HandleException();
-	}
-	return S_OK;
+	return Com::RunAction([](){ Com::CheckError(E_FAIL, __FUNCTION__, "test"); });
 }
 
 int main()
